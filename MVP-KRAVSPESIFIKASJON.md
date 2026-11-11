@@ -50,7 +50,7 @@ MVP-en er **ikke** et fullt ERP-system. Lønn, prosjekt, varelager, produksjon, 
 - Ingen lønn, prosjekt, varelager eller produksjon i MVP.
 - Ingen KID, eFaktura eller abonnementsfaktura i MVP; dette er P1.
 - Nettskybasert webapplikasjon med responsivt grensesnitt. Native mobilapp er P1.
-- Integrasjoner mot bank, Altinn 3 og EHF/Peppol kan bygges eller kjøpes; kravene er funksjonelle, ikke leverandørspesifikke.
+- EHF/Peppol og Altinn 3 bygges som egne adaptere der det er lovlig; sertifisert partner kan brukes for transport inntil sertifisering er på plass. PSD2 bruker lisensiert AISP-partner, med CAMT.053/CSV som fallback.
 - MVP-en skal kunne brukes av en regnskapsfører på vegne av en klient, med sporbar tilgang.
 
 ---
@@ -511,23 +511,31 @@ Følgende skal ikke bygges i MVP, og skal avvises eller parkeres dersom det dukk
 
 ## 12. Åpne spørsmål
 
-Disse må avklares før utviklingen av P0-B starter:
+> **Status 11.11.2026:** Spørsmål 1–5 er avklart og ført inn i [PLAN.md](PLAN.md) §3.4. Gjenstående spørsmål er nummerert 6–16 nedenfor, og må avklares før P0-B.
 
-1. Skal første målgruppe være ENK, AS eller begge fra dag én?
-2. Kjøper vi EHF-access point, eller bygger vi egen Peppol-tilkobling?
-3. Kjøper vi Altinn 3-integrasjon, eller bygger vi den selv?
-4. Skal bankstart være filimport (CAMT.053/CSV) eller PSD2 fra lansering?
-5. Hvor skal data lagres, og hvilken leverandør brukes til drift og backup?
-6. Skal signering skje med BankID i vår løsning, eller via Altinn-redirect?
-7. Hvor mye av årsoppgjøret skal automatiseres, og hvor mye skal være manuelle steg med sjekkliste?
-8. Skal vi støtte avvikende regnskapsår i MVP, eller bare kalenderår?
-9. Skal KID inkluderes i P0 likevel, dersom pilotkundene krever det?
-10. Skal vi støtte utenlandsk valuta i MVP, eller utsette til P1?
-11. Hvem er ansvarlig for faglig kvalitetssikring av MVA- og skatteberegninger?
-12. Hvor lenge skal data beholdes etter lovpålagt femårsperiode, og hvordan håndteres sletting?
-13. Skal gratisversjonen ha begrensninger på bilag, brukere eller funksjoner?
-14. Hvilken supportmodell og språk skal vi tilby ved lansering?
-15. Skal vi ha en egen «prøveforetak»-modus med eksempeldata?
+**Besvarte spørsmål 11.11.2026:**
+
+| # | Spørsmål | Svar |
+|---|---|---|
+| 1 | ENK, AS eller begge? | Begge |
+| 2 | EHF-access point? | Bygg eget der det er lovlig; partner for transport inntil sertifisering |
+| 3 | Altinn 3? | Bygg eget som sluttbrukersystem |
+| 4 | Filimport eller PSD2? | PSD2 via lisensiert AISP-partner; filimport som fallback |
+| 5 | Datalagring? | PostgreSQL 16+ managed i EU/Norge; hostingleverandør avklares i ADR-003 |
+
+**Gjenstår før P0-B:**
+
+6. Hostingleverandør og datalagringssted.
+7. BankID direkte eller via Altinn-redirect.
+8. Hvor mye av årsoppgjøret skal automatiseres.
+9. Kalenderår eller også avvikende regnskapsår.
+10. KID i P0 eller P1.
+11. Utenlandsk valuta i MVP eller P1.
+12. Hvem kvalitetssikrer MVA- og skatteberegninger.
+13. Hvor lenge data beholdes etter fem år.
+14. Gratisversjonens begrensninger.
+15. Supportmodell og språk.
+16. Prøveforetak med eksempeldata.
 
 ---
 

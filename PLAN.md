@@ -18,6 +18,7 @@ Arbeidet så langt har gitt:
 - **Regelverkstidslinje** for 2026–2030, med e-faktura, SAF-T 1.40, digital bokføring og aksjonærregister.
 - **15 MVP-krav** med **122 unike akseptansekriterier**, delt i P0-A (kjerneflyt) og P0-B (launch-blockere).
 - En tydelig avgrensning: lønn, prosjekt, varelager og produksjon er ikke MVP.
+- Produktbeslutninger 11.11.2026: begge selskapsformer, PostgreSQL, egen EHF/Altinn der det er lovlig, og PSD2 via lisensiert partner.
 
 Planen under er skrevet for at jeg skal kunne gjennomføre prosjektet i små, verifiserbare steg uten å miste retning, og for at du skal kunne se nøyaktig hva som er gjort, hva som gjenstår og hvilke beslutninger som må tas.
 
@@ -110,6 +111,27 @@ Jeg bygger ikke flere moduler samtidig. Hver fase har en eksplisitt exit-port, o
 6. **Åpne data.** Brukeren eier dataene sine og kan eksportere dem når som helst.
 7. **Ingen skjulte kostnader.** Gratis betyr gratis kjerne, ikke gratis med skjulte transaksjonsgebyr.
 
+### 3.4 Produktbeslutninger fra eier (11.11.2026)
+
+| # | Tema | Beslutning | Konsekvens |
+|---|---|---|---|
+| 1 | Målgruppe | Både ENK og små/mellomstore AS | MVP-01 og årsoppgjør må støtte begge; AS-risiko adresseres i Fase 2 |
+| 2 | EHF-access point | Bygg eget der det er lovlig. Det er lovlig, men krever OpenPeppol-medlemskap, Service Provider Agreement med DFØ, akkreditering i Peppol Testbed og ISO/IEC 27001 eller tilsvarende. Bygg egen XML-generator og validator nå; søk access point-sertifisering; bruk sertifisert partner for transport inntil sertifiseringen er klar. | Fase 2; partner som fallback; blokkerer ikke P0-A |
+| 3 | Altinn 3 | Bygg eget. Lovlig som sluttbrukersystem, men krever signerte bruksvilkår, scopes fra Digdir, Maskinporten/ID-porten, systembruker og testing i testmiljø. | Fase 2; søk scopes i Fase 0; eksport/manuell innsending som fallback |
+| 4 | Bank | PSD2 via lisensiert AISP-partner som langsiktig løsning; CAMT.053/CSV som robust fallback i P0. Egen AISP-konsesjon vurderes senere, ikke i MVP. | Fase 1 filimport; Fase 2/3 partner |
+| 5 | Database | PostgreSQL 16+ managed i EU/Norge, med Drizzle. D1/SQLite brukes bare til kastbare prototyper. | ADR-001 besluttet; Fase 0 |
+| 6 | Hosting | Ikke endelig valgt; Norge/EØS, managed PostgreSQL og objektlagring. | ADR-003 i Fase 0 |
+| 7 | PDF | Egen server-side PDF-adapter; bibliotek velges i Fase 0. | ADR-002 i Fase 0 |
+| 8 | Signering | Altinn-redirect først; direkte BankID senere. | ADR-012 |
+
+**Beslutningsgrunnlag:**
+
+- **EHF:** DFØs veileder for aksesspunkt og OpenPeppol-medlemskap bekrefter at en programvareleverandør kan drive eget aksesspunkt etter sertifisering. Krav: OpenPeppol-medlemskap, Service Provider Agreement med norsk Peppol-myndighet, bestått test i Peppol Testbed og ISO/IEC 27001 eller tilsvarende.
+- **Altinn 3:** Digdirs guide for sluttbrukersystemer og Skatteetatens krav bekrefter at egen integrasjon er åpen, men krever bruksvilkår, scopes, Maskinporten/ID-porten og systembruker.
+- **PSD2:** Produksjonstilgang krever AISP-konsesjon fra Finanstilsynet og QWAC/QSealC-sertifikat. Egen konsesjon er regulert og ressurskrevende; derfor lisensiert partner i MVP.
+- Kilder: <https://anskaffelser.no/verktoy/veiledere/aksesspunkt>, <https://samarbeid.digdir.no/altinn/kom-i-gang-med-integrasjon-mot-altinn-3/2868>, <https://developer.dnb.no/documentation/psd2-accounts>.
+
+
 ---
 
 ## 4. Funnregister
@@ -200,8 +222,8 @@ Dette er de viktigste funnene fra kartleggingen. Det komplette funksjonsregister
 - **Vedlegg** må lagres med sjekksum og kunne hentes i fem år.
 - **EHF** må lagres i opprinnelig XML-format, ikke bare som PDF.
 - **SAF-T** må valideres mot XSD og mappes mot næringsspesifikasjon og standard MVA-koder.
-- **Bankimport** bør starte med CAMT.053 og CSV; PSD2 kan komme senere.
-- **Altinn 3**, **EHF-access point** og **BankID** er eksterne avhengigheter som må avklares tidlig.
+- **Bank** starter med CAMT.053 og CSV; PSD2 hentes via lisensiert AISP-partner, ikke egen konsesjon i MVP.
+- **EHF-access point** og **Altinn 3** er lovlige å bygge selv, men krever medlemskap, avtaler og sertifisering; **BankID** og **PSD2** krever egne avtaler eller konsesjoner.
 - **PDF-generering**, **OCR** og **XML-validering** må ha testbare adaptere, slik at leverandørvalg ikke låser kjernen.
 
 ### 4.5 UX- og kommersielle funn
@@ -226,23 +248,27 @@ Dette er de viktigste funnene fra kartleggingen. Det komplette funksjonsregister
 7. Migrering fra andre systemer feiler.
 8. Supportkapasitet ved lansering.
 
-**Åpne spørsmål som må avklares før P0-B:**
+**Beslutninger fra eier 11.11.2026:**
 
-1. ENK, AS eller begge fra dag én?
-2. Kjøpe eller bygge EHF-access point?
-3. Kjøpe eller bygge Altinn 3-integrasjon?
-4. Filimport eller PSD2 for bank?
-5. Hvor skal data lagres?
-6. BankID i egen løsning eller via Altinn?
-7. Hvor mye av årsoppgjøret skal automatiseres?
-8. Kalenderår eller også avvikende regnskapsår?
-9. KID i P0 eller P1?
-10. Utenlandsk valuta i MVP eller P1?
-11. Hvem kvalitetssikrer MVA- og skatteberegninger?
-12. Hvor lenge skal data beholdes etter fem år?
-13. Skal gratisversjonen ha begrensninger?
-14. Hvilken supportmodell og språk ved lansering?
-15. Skal det finnes et prøveforetak med eksempeldata?
+1. Målgruppe: både ENK og små/mellomstore AS.
+2. EHF: bygg eget der det er lovlig; krever OpenPeppol-medlemskap, Service Provider Agreement og sertifisering. Partner brukes for transport inntil sertifisering.
+3. Altinn 3: bygg eget som sluttbrukersystem; krever scopes, Maskinporten/ID-porten og systembruker.
+4. Bank: PSD2 via lisensiert AISP-partner; CAMT.053/CSV som fallback.
+5. Database: PostgreSQL 16+ managed i EU/Norge.
+
+**Gjenstår før P0-B:**
+
+6. Hostingleverandør og datalagringssted.
+7. BankID direkte eller via Altinn-redirect.
+8. Hvor mye av årsoppgjøret skal automatiseres.
+9. Kalenderår eller også avvikende regnskapsår.
+10. KID i P0 eller P1.
+11. Utenlandsk valuta i MVP eller P1.
+12. Hvem kvalitetssikrer MVA- og skatteberegninger.
+13. Hvor lenge data beholdes etter fem år.
+14. Gratisversjonens begrensninger.
+15. Supportmodell og språk.
+16. Prøveforetak med eksempeldata.
 
 ---
 
@@ -267,8 +293,8 @@ Dette er de viktigste funnene fra kartleggingen. Det komplette funksjonsregister
 | Styling | Tailwind CSS + eget designsystem | Rask utvikling og konsistent visuelt uttrykk |
 | Komponenter | Egne primitiver, eventuelt Radix/shadcn som utgangspunkt | Tilgjengelighet og kontroll uten å låse designet |
 | Skjema | React Hook Form + Zod | Typesikker validering på klient og server |
-| Database | Postgres som anbefalt produksjonsdatabase; D1/SQLite kan brukes i tidlig prototype | Regnskap krever transaksjoner, constraints og rapportering |
-| ORM | Drizzle | Typer, migreringer og støtte for både Postgres og SQLite |
+| Database | PostgreSQL 16+ (managed, EU/Norge) | ACID, constraints, rapportering og modenhet; besluttet 11.11.2026 |
+| ORM | Drizzle | Typer, migreringer og PostgreSQL-støtte |
 | Auth | Egen sesjonsbasert auth med e-post/passord, TOTP og recovery-koder; BankID som egen adapter senere | Kontroll på 2FA og sporbarhet |
 | Filer | S3-kompatibel lagring eller R2 | Vedlegg, PDF og eksportfiler |
 | PDF | Server-side PDF-adapter, valgt etter spike | Faktura og årsregnskap må være deterministisk |
@@ -278,7 +304,7 @@ Dette er de viktigste funnene fra kartleggingen. Det komplette funksjonsregister
 | CI | GitHub Actions | Typecheck, lint, test, bygg og XML-validering |
 | Hosting | Norge/EØS, container eller serverless | Personvern og datalagringskrav |
 
-**ADR-001:** Databasevalg tas i Fase 0. Kravet er ACID-transaksjoner, foreign keys, unike constraints, gode rapporteringsmuligheter og enkel migrering. Postgres er foreløpig anbefaling fordi regnskapsdata har strenge konsistenskrav.
+**ADR-001 (besluttet 11.11.2026):** PostgreSQL 16+ som managed tjeneste i EU/Norge, med Drizzle og migreringer. Kravet er ACID-transaksjoner, foreign keys, unike constraints, gode rapporteringsmuligheter og enkel migrering. D1/SQLite brukes bare til kastbare prototyper, ikke i produksjon.
 
 **ADR-002:** PDF-generering tas i Fase 0. Kravet er norsk tegnsett, logo, tabeller, sidebryting, deterministisk output og testbare filer.
 
@@ -340,15 +366,15 @@ Regelen er at en modul bare eksponerer tjenester og typer, ikke interne database
 
 | Integrasjon | MVP-strategi | Senere |
 |---|---|---|
-| Bank | CAMT.053 og CSV-import, manuell og automatisk matching | PSD2 og direktesaldo |
-| EHF/Peppol | Bygg UBL/EHF XML, valider med golden files, send via access point-adapter | Flere dokumenttyper og selvfakturering |
-| Altinn 3 | Adapter for mva-melding, skattemelding og årsregnskap | Utvidet meldingsflyt og status |
+| Bank | CAMT.053/CSV i P0; PSD2 via lisensiert AISP-partner som mål | Egen AISP-konsesjon vurderes senere |
+| EHF/Peppol | Bygg egen XML/validator; søk Peppol AP-sertifisering; sertifisert partner for transport inntil videre | Egen access point i drift |
+| Altinn 3 | Bygg egen klient med Maskinporten/systembruker; testmiljø først | Full automatisk innsending |
 | BankID | Signeringsadapter, først via Altinn-redirect | Direkte BankID-integrasjon |
 | OCR | Leverandøradapter med konfidens og manuell kontroll | Egen modell eller bedre tolkning |
 | E-post | Transaksjonsadapter for faktura og invitasjoner | Innboks og automatisk svarkobling |
 | Lagring | S3-kompatibel eller R2 | Livssyklus og arkivtier |
 
-**Viktig:** EHF-access point, Altinn 3 og BankID er eksterne avhengigheter. De kan ikke «kodes ferdig» i sandkassen uten avtaler, testmiljø og sertifisering. Planen legger derfor opp til adaptere, testdobler og tydelige blokkere i Fase 0.
+**Beslutningsgrunnlag (11.11.2026):** Eget Peppol-access point er lovlig, men krever OpenPeppol-medlemskap, Service Provider Agreement med norsk Peppol-myndighet (DFØ), bestått akkreditering i Peppol Testbed og ISO/IEC 27001 eller tilsvarende. Egen Altinn 3-integrasjon er lovlig som sluttbrukersystem, men krever signerte bruksvilkår, scopes fra Digdir, Maskinporten/ID-porten og systembruker. PSD2 i produksjon krever AISP-konsesjon fra Finanstilsynet og QWAC/QSealC-sertifikat; derfor bruker vi lisensiert partner i MVP. Planen legger opp til adaptere, testdobler og tydelige blokkere i Fase 0.
 
 ### 5.6 Sikkerhet og compliance i arkitekturen
 
@@ -504,8 +530,8 @@ Estimatene er relative og skal kalibreres etter Fase 0. De er ikke løfter om da
 
 **Mål:** et trygt skjelett som alle senere moduler bygger på.
 
-- [ ] **0.1 Avklare målgruppe og de 15 åpne spørsmålene** i MVP-dokumentet, med prioritet på de seks kritiske.
-- [ ] **0.2 ADR-001 Database:** velg Postgres eller D1/SQLite, med ACID, constraints og migreringer.
+- [x] **0.1 Målgruppe og beslutninger:** Begge selskapsformer er valgt; spørsmål 1–5 er avklart i 3.4.
+- [x] **0.2 ADR-001 Database:** PostgreSQL 16+ managed i EU/Norge, med Drizzle og migreringer.
 - [ ] **0.3 ADR-002 PDF:** velg PDF-adapter og test norsk tegnsett, tabeller og sidebryting.
 - [ ] **0.4 ADR-003 Hosting:** velg Norge/EØS-drift, miljøer og hemmelighetshåndtering.
 - [ ] **0.5 ADR-004 Auth:** velg sesjonsløsning, passordpolicy, TOTP og recovery-koder.
@@ -817,18 +843,19 @@ Følg med på:
 
 | ADR | Tema | Foreløpig beslutning | Status | Frist |
 |---|---|---|---|---|
-| ADR-001 | Database | Postgres anbefalt; D1/SQLite som alternativ | Åpen | Fase 0 |
+| ADR-001 | Database | PostgreSQL 16+ managed i EU/Norge | Besluttet 11.11.2026 | Fase 0 |
 | ADR-002 | PDF | Egen server-side PDF-adapter | Åpen | Fase 0 |
 | ADR-003 | Hosting | Norge/EØS, container eller serverless | Åpen | Fase 0 |
 | ADR-004 | Auth | Egen sesjon, e-post/passord, TOTP og recovery | Foreslått | Fase 0 |
-| ADR-005 | EHF | Kjøpe access point, bygge XML selv | Åpen | Før S10 |
-| ADR-006 | Altinn 3 | Kjøpe eller bygge integrasjon | Åpen | Før S11 |
-| ADR-007 | Bank | Filimport først, PSD2 senere | Foreslått | Fase 1 |
+| ADR-005 | EHF | Bygg egen XML/validator; søk Peppol AP-sertifisering; partner for transport inntil videre | Besluttet (retning) | Før S10 |
+| ADR-006 | Altinn 3 | Bygg egen klient med Maskinporten/systembruker | Besluttet (retning) | Før S11 |
+| ADR-007 | Bank | PSD2 via lisensiert AISP-partner; filimport som fallback | Besluttet (retning) | Fase 1–2 |
 | ADR-008 | OCR | Leverandøradapter med konfidens | Foreslått | Fase 1 |
 | ADR-009 | UI | Next.js, Tailwind og eget designsystem | Foreslått | Fase 0 |
 | ADR-010 | Forretningsmodell | Gratis kjerne, transparent viderefakturering | Foreslått | Før lansering |
 | ADR-011 | Oppbevaring | Fem år, deretter sletting med legal hold | Foreslått | Før lansering |
 | ADR-012 | Signering | Altinn-redirect først, BankID direkte senere | Foreslått | Før S11 |
+| ADR-013 | Målgruppe | ENK og små/mellomstore AS | Besluttet 11.11.2026 | – |
 
 ---
 
@@ -837,9 +864,9 @@ Følg med på:
 1. [x] Kartlegge marked, funksjoner og regelverk.
 2. [x] Skrive MVP-krav med akseptansekriterier.
 3. [x] Skrive denne prosjektplanen.
-4. [ ] Pushe dokumentene til GitHub.
-5. [ ] Avklare de seks kritiske spørsmålene med deg.
-6. [ ] Skrive ADR-001 til ADR-004.
+4. [x] Pushe dokumentene til GitHub.
+5. [x] Avklare målgruppe, EHF, Altinn, bank og database.
+6. [ ] Ferdigstille ADR-002–004 og søke OpenPeppol-medlemskap samt Altinn 3-scopes.
 7. [ ] Scaffolde Next.js-prosjektet med CI.
 8. [ ] Lage databaseskjema, migreringer og seed for NS 4102.
 9. [ ] Bygge auth, foretak, roller og AppShell.
@@ -899,5 +926,6 @@ Følg med på:
 | Versjon | Dato | Endring |
 |---|---|---|
 | 0.1 | 11.11.2026 | Første prosjektplan med funnregister, arkitektur, UI-retning, faser, arbeidsmåte og beslutningslogg |
+| 0.2 | 11.11.2026 | Produktbeslutninger: ENK og AS, PostgreSQL, egen EHF/Altinn der lovlig, PSD2 via lisensiert partner |
 
 <!-- END -->
