@@ -1,2 +1,2 @@
 # Gratis_Regnskap
-et gratia regnskapsprogram for edt norske markedet. laget på gratis ai modeller. 
+et gratis regnskapsprogram for det norske markedet. laget på gratis ai modeller. 
